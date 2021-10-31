@@ -19,8 +19,11 @@ namespace RegexRenamer
 
         //word starts with jsimd, then words, and then any count of spaces, then ( or ; or )
         private static string mRegexExpression = @"jsimd\w+\s*[(|;|)]";
+        private static string mInnerRegexExpression = @"\w+";
+
         private static string mAddWord = "_renamed";
         private static Regex mRx = new Regex(mRegexExpression, RegexOptions.Compiled);
+        private static Regex mInnerRegex = new Regex(mInnerRegexExpression, RegexOptions.Compiled);
 
         static void Main(string[] args)
         {
@@ -30,33 +33,21 @@ namespace RegexRenamer
             //Work with files here
             foreach (var file in filesList)
             {
-                var fileStrings = File.ReadAllLines(file);
-                for (int i = 0; i < fileStrings.Length; i++)
-                {
-                    var str = fileStrings[i];
-                    //we check if we already renamed smth
-                    if (!str.Contains(mAddWord))
-                    {
-                        var matches = mRx.Matches(str);
-                        foreach (Match match in matches)
-                        {
-                            string subst = "";
-                            if (match.Value.Contains(")") || match.Value.Contains("(") || match.Value.Contains(";"))
-                                subst = match.Value.Substring(0, match.Value.Length - 1);
-                            else
-                                subst = match.Value;
+                var fileStrings = File.ReadAllText(file);
+                //we check if we already renamed smth
+                var matches = mRx.Matches(fileStrings);
 
-                            str = str.Replace(subst, subst + mAddWord);
-                        }
-                        if (matches.Count != 0)
-                            Console.WriteLine(str);
-                        fileStrings[i] = str;
-                    }
-                }
-                File.WriteAllLines(file, fileStrings);
+                //takes match and adds a word in the end
+                Func<Match, string> renameWord = (Match match) =>
+                { return match.Value + mAddWord; };
+
+                //finds words and renames them
+                Func<Match, string> findWordAndRename = (Match match) =>
+                { return mInnerRegex.Replace(match.Value, new MatchEvaluator(renameWord)); };
+
+                fileStrings = mRx.Replace(fileStrings, new MatchEvaluator(findWordAndRename));
+                File.WriteAllText(file, fileStrings);
             }
-
-            Console.ReadKey();
         }
 
         /// <summary>

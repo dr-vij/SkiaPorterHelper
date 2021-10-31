@@ -17,7 +17,7 @@ namespace RegexRenamer
             SearchExpression = searchExpression;
         }
 
-        public string[] FileExtensions = { ".h", ".c" };
+        public string[] FileExtensions = { ".h", ".c", ".cpp", ".asm", ".cs" };
         public string AddWord = "_renamed";
         public string WordExpression = @"\w+";
     }
@@ -35,24 +35,22 @@ namespace RegexRenamer
 
             //renames all conflicting with Unity funcions of libjpeg
             var path1 = "/Users/vij/WorkProjects/ThirdParty/SkiaSharp/";
-            var expression1 = @"\bjsimd\w+\s*([(]|[;]|[)])";
+            //var expression1 = @"\bjsimd\w+\s*([(]|[;]|[)])";
+            var expression1 = @"\b(jsimd_can_rgb_ycc|jsimd_can_rgb_gray|jsimd_can_ycc_rgb|jsimd_rgb_ycc_convert|jsimd_rgb_gray_convert|jsimd_ycc_rgb_convert|jsimd_can_h2v2_downsample|jsimd_can_h2v1_downsample|jsimd_h2v2_downsample|jsimd_h2v1_downsample|jsimd_can_h2v2_upsample|jsimd_can_h2v1_upsample|jsimd_h2v2_upsample|jsimd_h2v1_upsample|jsimd_can_h2v2_fancy_upsample|jsimd_can_h2v1_fancy_upsample|jsimd_h2v2_fancy_upsample|jsimd_h2v1_fancy_upsample|jsimd_can_h2v2_merged_upsample|jsimd_can_h2v1_merged_upsample|jsimd_h2v2_merged_upsample|jsimd_h2v1_merged_upsample|jsimd_can_convsamp|jsimd_can_convsamp_float|jsimd_convsamp|jsimd_convsamp_float|jsimd_can_fdct_islow|jsimd_can_fdct_ifast|jsimd_can_fdct_float|jsimd_fdct_islow|jsimd_fdct_ifast|jsimd_fdct_float|jsimd_can_quantize|jsimd_can_quantize_float|jsimd_quantize|jsimd_quantize_float|jsimd_can_idct_2x2|jsimd_can_idct_4x4|jsimd_idct_2x2|jsimd_idct_4x4|jsimd_can_idct_islow|jsimd_can_idct_ifast|jsimd_can_idct_float|jsimd_idct_islow|jsimd_idct_ifast|jsimd_idct_float)\b";
             var task1 = new RenameTask(path1, expression1);
             renameTasks.Add(task1);
 
             //Renames all conflicting with Unity functions of libpng
             var path2 = "/Users/vij/WorkProjects/ThirdParty/SkiaSharp/";
-            var expresstion2 = @"\b(png_get_eXIf|png_handle_eXIf|png_check_chunk_length|png_set_eXIf_1|png_get_uint_32|png_get_int_32|png_get_uint_16|png_zlib_inflate|png_set_eXIf|png_write_eXIf)\b";
+            var expresstion2 = @"\b(png_get_eXIf|png_get_eXIf_1|png_handle_eXIf|png_check_chunk_length|png_set_eXIf_1|png_get_uint_32|png_get_int_32|png_get_uint_16|png_zlib_inflate|png_set_eXIf|png_write_eXIf)\b";
             var task2 = new RenameTask(path2, expresstion2);
-            task2.FileExtensions = new[] { ".h", ".c", ".cpp" };
             renameTasks.Add(task2);
 
             //Renames all conflicting with Unity fuction of freetype
             var path3 = "/Users/vij/WorkProjects/ThirdParty/SkiaSharp/";
             var expression3 = @"\b(FT_Get_Multi_Master|FT_Get_MM_Var|FT_Set_MM_Design_Coordinates|FT_Set_Var_Design_Coordinates|FT_Get_Var_Design_Coordinates|FT_Set_MM_Blend_Coordinates|FT_Set_Var_Blend_Coordinates|FT_Get_MM_Blend_Coordinates|FT_Get_Var_Blend_Coordinates)\b";
             var task3 = new RenameTask(path3, expression3);
-            task3.FileExtensions = task2.FileExtensions;
             renameTasks.Add(task3);
-
 
             foreach (var task in renameTasks)
             {
@@ -87,9 +85,12 @@ namespace RegexRenamer
 
                         fileStrings = mRx.Replace(fileStrings, new MatchEvaluator(findWordAndRename));
                         File.WriteAllText(file, fileStrings);
+                        Console.WriteLine(file);
                     }
                 }
             }
+            Console.WriteLine("All done.");
+            Console.ReadKey();
         }
 
         /// <summary>
